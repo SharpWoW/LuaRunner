@@ -90,17 +90,30 @@ local function create()
     frame.output.EditBox:SetPoint("RIGHT", frame.output, "RIGHT", 0, 0)
     frame.output.CharCount:Hide()
 
-    frame.input:SetScript("OnTextChanged", function(f, user)
-        if not user then return end
-
-        local result = exec(f:GetText())
+    local function update()
+        local result = exec(frame.input:GetText())
 
         if type(result) ~= "string" then
             result = "<<< exec returned non-string value >>>"
         end
 
         frame.output.EditBox:SetText(result)
+    end
+
+    frame.input:SetScript("OnTextChanged", function(f, user)
+        if not user then return end
+        update()
     end)
+
+    frame:SetScript("OnShow", function(f)
+        f.tick = C_Timer.NewTicker(0.1, update)
+    end)
+
+    frame:SetScript("OnHide", function(f)
+        if f.tick then f.tick:Cancel() end
+    end)
+
+    frame:Hide()
 
     return frame
 end
